@@ -58,12 +58,8 @@
     const pct = Math.round(clamped * 100);
     opacitySlider.value = String(pct);
     opacityLabel.textContent = pct + '%';
-    // CSS fallback: on some Linux setups BrowserWindow.setOpacity is ignored
-    // when transparent:true — dim the panel so overlay still reads translucent.
-    const appRoot = document.getElementById('app');
-    if (appRoot) {
-      appRoot.style.opacity = String(clamped);
-    }
+    // Translucency only on the video stage — chrome stays fully opaque.
+    document.documentElement.style.setProperty('--video-opacity', String(clamped));
   }
 
   function clamp(n, a, b) {

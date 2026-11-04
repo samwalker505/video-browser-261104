@@ -23,6 +23,8 @@ const OPACITY_MAX = 1.0;
 
 let mainWindow = null;
 let clickThrough = false;
+/** Video-layer opacity (applied in renderer CSS; window stays at 1.0 so chrome stays opaque). */
+let contentOpacity = DEFAULT_OPACITY;
 /** Keep a thin interactive strip so user can always exit click-through */
 const GRIP_HEIGHT = 36;
 
@@ -142,6 +144,7 @@ function createWindow() {
   }
 
   const opacity = clampOpacity(saved.opacity ?? DEFAULT_OPACITY);
+  contentOpacity = opacity;
   const alwaysOnTop = saved.alwaysOnTop !== false;
 
   // Linux transparency: Chromium sometimes needs these switches.
@@ -184,7 +187,8 @@ function createWindow() {
     }
   }
 
-  mainWindow.setOpacity(opacity);
+  // Keep the native window fully opaque so the toolbar is never dimmed by compositor opacity.
+  mainWindow.setOpacity(1);
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
   if (localOrigin) {
@@ -218,7 +222,7 @@ function createWindow() {
         y: b.y,
         width: b.width,
         height: b.height,
-        opacity: mainWindow.getOpacity(),
+        opacity: contentOpacity,
       });
     }, 400);
   };
@@ -234,7 +238,7 @@ function createWindow() {
           y: b.y,
           width: b.width,
           height: b.height,
-          opacity: mainWindow.getOpacity(),
+          opacity: contentOpacity,
           alwaysOnTop: mainWindow.isAlwaysOnTop(),
         });
       }
@@ -306,8 +310,8 @@ function setClickThrough(enabled) {
 
 function adjustOpacity(delta) {
   if (!mainWindow || mainWindow.isDestroyed()) return;
-  const next = clampOpacity(mainWindow.getOpacity() + delta);
-  mainWindow.setOpacity(next);
+  const next = clampOpacity(contentOpacity + delta);
+  contentOpacity = next;
   saveState({ opacity: next });
   mainWindow.webContents.send('opacity:changed', next);
 }
@@ -333,18 +337,19 @@ function registerIpc() {
   });
   ipcMain.handle('opacity:get', () => {
     if (!mainWindow || mainWindow.isDestroyed()) return DEFAULT_OPACITY;
-    return mainWindow.getOpacity();
+    return contentOpacity;
   });
   ipcMain.handle('opacity:set', (_e, value) => {
     if (!mainWindow || mainWindow.isDestroyed()) return DEFAULT_OPACITY;
     const next = clampOpacity(value);
-    mainWindow.setOpacity(next);
+    contentOpacity = next;
     saveState({ opacity: next });
+    mainWindow.webContents.send('opacity:changed', next);
     return next;
   });
   ipcMain.handle('opacity:nudge', (_e, delta) => {
     adjustOpacity(Number(delta) || 0);
-    return mainWindow ? mainWindow.getOpacity() : DEFAULT_OPACITY;
+    return contentOpacity;
   });
   ipcMain.handle('clickthrough:set', (_e, enabled) => {
     setClickThrough(!!enabled);

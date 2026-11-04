@@ -16,7 +16,7 @@ npm start
 
 | OS | Notes |
 |----|--------|
-| **Linux** | Uses `alwaysOnTop` level `screen-saver` so the window stays above many fullscreen apps. Transparency may need Chromium flags (already enabled: `--enable-transparent-visuals`). If the window is fully opaque on your GPU/driver, quit the app and start with `npx electron . --disable-gpu` (or `ELECTRON_DISABLE_GPU=1`). Even when the compositor ignores `setOpacity` on transparent windows, the in-app opacity slider still dims the panel via CSS (30–100%). Click-through uses `setIgnoreMouseEvents(true, { forward: true })`. |
+| **Linux** | Uses `alwaysOnTop` level `screen-saver` so the window stays above many fullscreen apps. Transparency may need Chromium flags (already enabled: `--enable-transparent-visuals`). If the window is fully opaque on your GPU/driver, quit the app and start with `npx electron . --disable-gpu` (or `ELECTRON_DISABLE_GPU=1`). Opacity slider adjusts the **video stage** via CSS (30–100%); the toolbar stays opaque. Click-through uses `setIgnoreMouseEvents(true, { forward: true })`. |
 | **macOS** | Works out of the box. Global shortcuts: `Cmd+Shift+C` (click-through), `Cmd+Shift+T` (pin). Grant Accessibility if prompted for global shortcuts. |
 | **Windows** | Works out of the box. Same shortcuts with `Ctrl`. |
 

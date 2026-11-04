@@ -472,6 +472,42 @@
     api.onAlwaysOnTopChanged((v) => setToggle(btnAot, v));
   }
 
+  // Frameless move: main process tracks cursor (reliable over YouTube iframe on macOS).
+  function installWindowMoveDrag() {
+    if (!api || !api.beginWindowMove) return;
+
+    let moving = false;
+
+    const onMoveStart = (e) => {
+      if (e.button !== 0) return;
+      if (clickThrough) return;
+      e.preventDefault();
+      e.stopPropagation();
+      moving = true;
+      void api.beginWindowMove();
+    };
+
+    const onMoveEnd = () => {
+      if (!moving) return;
+      moving = false;
+      void api.endWindowMove();
+    };
+
+    document.querySelectorAll('.edge-drag').forEach((el) => {
+      el.addEventListener('mousedown', onMoveStart);
+    });
+    const dragRegion = document.getElementById('drag-region');
+    if (dragRegion) dragRegion.addEventListener('mousedown', onMoveStart);
+
+    window.addEventListener('mouseup', onMoveEnd);
+    window.addEventListener('blur', onMoveEnd);
+    document.addEventListener('mouseleave', (e) => {
+      if (e.relatedTarget == null) onMoveEnd();
+    });
+  }
+
+  installWindowMoveDrag();
+
   // Fallback if running outside Electron (e.g. opened as file for CSS check)
   if (!api) {
     setOpacityUi(0.92);

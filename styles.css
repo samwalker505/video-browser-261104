@@ -40,11 +40,17 @@ html, body {
 /* —— Edge drag strips (frameless window move) —— */
 .edge-drag {
   position: absolute;
-  -webkit-app-region: drag;
-  z-index: 24;
+  /* IPC move in renderer — iframes steal hits over app-region on macOS */
+  -webkit-app-region: no-drag;
+  z-index: 30;
   pointer-events: auto;
+  cursor: grab;
   background: transparent;
   transition: background 0.15s ease;
+}
+
+.edge-drag:active {
+  cursor: grabbing;
 }
 
 .edge-drag:hover {
@@ -119,12 +125,17 @@ html, body {
 }
 
 .drag-region {
-  -webkit-app-region: drag;
+  -webkit-app-region: no-drag;
+  cursor: grab;
   display: flex;
   align-items: center;
   height: 100%;
   padding: 0 10px;
   flex-shrink: 0;
+}
+
+.drag-region:active {
+  cursor: grabbing;
 }
 
 .brand {
@@ -258,7 +269,8 @@ body.idle #stage {
 
 #player-host {
   position: absolute;
-  inset: 0;
+  /* Keep iframe off the drag ring — cross-origin iframes capture edge hits otherwise */
+  inset: var(--edge-drag);
   -webkit-app-region: no-drag;
 }
 

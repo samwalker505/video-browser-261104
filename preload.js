@@ -17,6 +17,8 @@ contextBridge.exposeInMainWorld('overlay', {
   saveVideo: (url) => ipcRenderer.invoke('state:saveVideo', url),
   gripEnter: () => ipcRenderer.invoke('grip:enter'),
   gripLeave: () => ipcRenderer.invoke('grip:leave'),
+  beginWindowMove: () => ipcRenderer.invoke('window:beginMove'),
+  endWindowMove: () => ipcRenderer.invoke('window:endMove'),
   onInit: (cb) => {
     const handler = (_e, data) => cb(data);
     ipcRenderer.on('state:init', handler);

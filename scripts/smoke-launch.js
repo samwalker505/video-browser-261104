@@ -27,6 +27,8 @@ ipcMain.handle('window:minimize', () => {});
 ipcMain.handle('window:close', () => { app.quit(); });
 ipcMain.handle('grip:enter', () => {});
 ipcMain.handle('grip:leave', () => {});
+ipcMain.handle('window:beginMove', () => true);
+ipcMain.handle('window:endMove', () => true);
 
 function startServer(root) {
   return new Promise((resolve, reject) => {

@@ -25,6 +25,47 @@ let mainWindow = null;
 let clickThrough = false;
 /** Video-layer opacity (applied in renderer CSS; window stays at 1.0 so chrome stays opaque). */
 let contentOpacity = DEFAULT_OPACITY;
+/** @type {{ timer: NodeJS.Timeout, startX: number, startY: number, winX: number, winY: number, width: number, height: number } | null} */
+let windowMoveSession = null;
+
+function stopWindowMove() {
+  if (windowMoveSession) {
+    clearInterval(windowMoveSession.timer);
+    windowMoveSession = null;
+  }
+}
+
+function beginWindowMove() {
+  if (!mainWindow || mainWindow.isDestroyed()) return false;
+  stopWindowMove();
+  const win = mainWindow;
+  const bounds = win.getBounds();
+  const cursor = screen.getCursorScreenPoint();
+  windowMoveSession = {
+    startX: cursor.x,
+    startY: cursor.y,
+    winX: bounds.x,
+    winY: bounds.y,
+    width: bounds.width,
+    height: bounds.height,
+    timer: setInterval(() => {
+      if (!mainWindow || mainWindow.isDestroyed()) {
+        stopWindowMove();
+        return;
+      }
+      const pt = screen.getCursorScreenPoint();
+      const dx = pt.x - windowMoveSession.startX;
+      const dy = pt.y - windowMoveSession.startY;
+      mainWindow.setBounds({
+        x: windowMoveSession.winX + dx,
+        y: windowMoveSession.winY + dy,
+        width: windowMoveSession.width,
+        height: windowMoveSession.height,
+      });
+    }, 16),
+  };
+  return true;
+}
 /** Keep a thin interactive strip so user can always exit click-through */
 const GRIP_HEIGHT = 36;
 
@@ -248,6 +289,7 @@ function createWindow() {
   });
 
   mainWindow.on('closed', () => {
+    stopWindowMove();
     mainWindow = null;
   });
 
@@ -334,6 +376,11 @@ function registerIpc() {
   });
   ipcMain.handle('window:close', () => {
     if (mainWindow && !mainWindow.isDestroyed()) mainWindow.close();
+  });
+  ipcMain.handle('window:beginMove', () => beginWindowMove());
+  ipcMain.handle('window:endMove', () => {
+    stopWindowMove();
+    return true;
   });
   ipcMain.handle('opacity:get', () => {
     if (!mainWindow || mainWindow.isDestroyed()) return DEFAULT_OPACITY;
@@ -441,6 +488,7 @@ app.whenReady().then(async () => {
 });
 
 app.on('will-quit', () => {
+  stopWindowMove();
   globalShortcut.unregisterAll();
   if (localServer) {
     try { localServer.close(); } catch { /* ignore */ }

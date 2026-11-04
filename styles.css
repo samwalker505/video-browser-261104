@@ -1,5 +1,6 @@
 :root {
   --chrome-h: 32px;
+  --edge-drag: 8px;
   --bg-glass: rgba(18, 18, 22, 0.72);
   --bg-glass-strong: rgba(12, 12, 16, 0.88);
   --border: rgba(255, 255, 255, 0.1);
@@ -34,6 +35,48 @@ html, body {
   border: 1px solid var(--border);
   background: transparent;
   position: relative;
+}
+
+/* —— Edge drag strips (frameless window move) —— */
+.edge-drag {
+  position: absolute;
+  -webkit-app-region: drag;
+  z-index: 24;
+  pointer-events: auto;
+  background: transparent;
+  transition: background 0.15s ease;
+}
+
+.edge-drag:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.edge-top {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--edge-drag);
+}
+
+.edge-bottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--edge-drag);
+}
+
+.edge-left {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--edge-drag);
+}
+
+.edge-right {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: var(--edge-drag);
 }
 
 /* —— Chrome bar —— */
@@ -216,6 +259,7 @@ body.idle #stage {
 #player-host {
   position: absolute;
   inset: 0;
+  -webkit-app-region: no-drag;
 }
 
 #player,
@@ -328,7 +372,7 @@ kbd {
   transform: scale(1.06);
 }
 
-/* Hover reveal zone at top when chrome hidden */
+/* Hover reveal zone at top when chrome hidden (does not block edge drag strips) */
 body.idle #app::before {
   content: "";
   position: absolute;
@@ -337,6 +381,7 @@ body.idle #app::before {
   right: 0;
   height: 28px;
   z-index: 15;
+  pointer-events: none;
 }
 
 body.click-through #chrome {

@@ -12,6 +12,12 @@
 </head>
 <body>
   <div id="app">
+    <!-- Frameless window drag handles (work even when chrome is hidden) -->
+    <div class="edge-drag edge-top" aria-hidden="true" title="Drag to move"></div>
+    <div class="edge-drag edge-right" aria-hidden="true" title="Drag to move"></div>
+    <div class="edge-drag edge-bottom" aria-hidden="true" title="Drag to move"></div>
+    <div class="edge-drag edge-left" aria-hidden="true" title="Drag to move"></div>
+
     <!-- Always-interactive grip (visible especially in click-through mode) -->
     <button
       id="grip"

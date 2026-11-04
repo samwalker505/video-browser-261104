@@ -35,6 +35,7 @@ npm start
 5. **16:9** — toggle aspect lock while resizing.
 6. **Space** — play/pause (via YouTube IFrame API).
 7. **Escape** — hide the thin chrome bar (hover near the top to show it again).
+8. **Move the window** — drag the top bar, or any **window edge** (8px strips; faint highlight on hover). Works with chrome hidden.
 
 Window position, size, opacity, aspect lock, pin state, and last video are restored from a small JSON file under Electron `userData`.
 

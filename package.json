@@ -1,0 +1,20 @@
+{
+  "name": "youtube-overlay",
+  "version": "1.0.0",
+  "description": "Translucent always-on-top YouTube overlay for coding \u2014 watch while you work",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "smoke": "node scripts/smoke-parse.js",
+    "start:linux": "electron . --disable-gpu",
+    "smoke:launch": "electron scripts/smoke-launch.js"
+  },
+  "author": "Sam",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "electron": "^33.2.0"
+  }
+}

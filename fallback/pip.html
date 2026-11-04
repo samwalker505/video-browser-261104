@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YouTube Overlay — Browser PiP Fallback</title>
+  <style>
+    :root {
+      --bg: #121216;
+      --text: #f0f0f2;
+      --muted: #9a9aa3;
+      --accent: #d01722;
+      --border: rgba(255,255,255,0.12);
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px;
+    }
+    h1 { font-size: 1.25rem; margin: 0 0 8px; }
+    .note {
+      max-width: 520px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .note strong { color: #ffb4b8; }
+    .row {
+      display: flex;
+      gap: 8px;
+      width: min(560px, 100%);
+      margin-bottom: 16px;
+    }
+    input {
+      flex: 1;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #0a0a0c;
+      color: var(--text);
+      padding: 0 12px;
+      font-size: 14px;
+    }
+    button {
+      height: 40px;
+      padding: 0 16px;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.secondary {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--border);
+    }
+    #frame-wrap {
+      width: min(560px, 100%);
+      aspect-ratio: 16 / 9;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    iframe { width: 100%; height: 100%; border: 0; }
+    #status { margin-top: 12px; font-size: 0.85rem; color: var(--muted); min-height: 1.2em; }
+  </style>
+</head>
+<body>
+  <h1>Browser Picture-in-Picture fallback</h1>
+  <p class="note">
+    A normal browser tab <strong>cannot</strong> sit translucent above your IDE.
+    Use the Electron app (<code>npm start</code>) for a real always-on-top overlay.
+    This page only helps in Chrome/Edge via <em>Document Picture-in-Picture</em> where available,
+    or the built-in video PiP after the embed loads.
+  </p>
+  <div class="row">
+    <input id="url" type="text" placeholder="YouTube URL or video ID" spellcheck="false" />
+    <button id="load" type="button">Load</button>
+    <button id="pip" class="secondary" type="button" disabled>Open PiP</button>
+  </div>
+  <div id="frame-wrap">
+    <iframe
+      id="yt"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowfullscreen
+      referrerpolicy="strict-origin-when-cross-origin"
+      title="YouTube"
+    ></iframe>
+  </div>
+  <p id="status"></p>
+  <script src="../lib/youtube-url.js"></script>
+  <script>
+    (function () {
+      const input = document.getElementById('url');
+      const loadBtn = document.getElementById('load');
+      const pipBtn = document.getElementById('pip');
+      const iframe = document.getElementById('yt');
+      const status = document.getElementById('status');
+      const YTUrl = window.YouTubeUrl;
+
+      function load() {
+        const parsed = YTUrl.parseYouTubeInput(input.value);
+        if (!parsed || (!parsed.videoId && !parsed.listId)) {
+          status.textContent = 'Invalid YouTube URL';
+          pipBtn.disabled = true;
+          return;
+        }
+        const src = YTUrl.sanitizeEmbedSrc(
+          YTUrl.buildEmbedUrl(parsed, { autoplay: false })
+        );
+        if (!src) {
+          status.textContent = 'Blocked unsafe embed';
+          return;
+        }
+        iframe.src = src;
+        pipBtn.disabled = !('documentPictureInPicture' in window);
+        status.textContent = 'documentPictureInPicture' in window
+          ? 'Loaded. Try Open PiP (Chrome/Edge).'
+          : 'Loaded. Use the player’s PiP control if shown; Document PiP not supported here.';
+      }
+
+      loadBtn.addEventListener('click', load);
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') load();
+      });
+
+      pipBtn.addEventListener('click', async () => {
+        if (!('documentPictureInPicture' in window)) {
+          status.textContent = 'Document PiP not supported in this browser';
+          return;
+        }
+        try {
+          const pipWindow = await documentPictureInPicture.requestWindow({
+            width: 480,
+            height: 270,
+          });
+          const clone = iframe.cloneNode(true);
+          clone.style.width = '100%';
+          clone.style.height = '100%';
+          clone.style.border = '0';
+          pipWindow.document.body.style.margin = '0';
+          pipWindow.document.body.style.background = '#000';
+          pipWindow.document.body.appendChild(clone);
+          status.textContent = 'PiP window open — still not a true OS overlay (use Electron for that).';
+        } catch (err) {
+          status.textContent = 'PiP failed: ' + (err && err.message ? err.message : err);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; media-src 'none'; connect-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com; child-src https://www.youtube.com https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self';"
+  />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YouTube Overlay</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Always-interactive grip (visible especially in click-through mode) -->
+    <button
+      id="grip"
+      type="button"
+      title="Click-through ON — click here or press Ctrl+Shift+C to disable"
+      aria-label="Disable click-through"
+    >◎</button>
+
+    <header id="chrome" class="chrome">
+      <div class="drag-region" id="drag-region">
+        <span class="brand" title="YouTube Overlay">▶</span>
+      </div>
+      <div class="chrome-controls no-drag">
+        <input
+          id="url-input"
+          type="text"
+          spellcheck="false"
+          autocomplete="off"
+          placeholder="Paste YouTube URL or video ID…"
+          aria-label="YouTube URL"
+        />
+        <button id="btn-load" type="button" class="btn accent" title="Load video">Load</button>
+        <label class="slider-wrap" title="Opacity">
+          <span class="slider-label" id="opacity-label">92%</span>
+          <input id="opacity" type="range" min="30" max="100" value="92" step="1" aria-label="Opacity" />
+        </label>
+        <button id="btn-aspect" type="button" class="btn toggle" title="Lock 16:9 aspect" aria-pressed="false">16:9</button>
+        <button id="btn-aot" type="button" class="btn toggle on" title="Always on top (Ctrl+Shift+T)" aria-pressed="true">Pin</button>
+        <button id="btn-clickthrough" type="button" class="btn toggle" title="Click-through (Ctrl+Shift+C)" aria-pressed="false">CT</button>
+        <button id="btn-min" type="button" class="btn icon" title="Minimize" aria-label="Minimize">─</button>
+        <button id="btn-close" type="button" class="btn icon danger" title="Close" aria-label="Close">✕</button>
+      </div>
+    </header>
+
+    <main id="stage">
+      <div id="player-host">
+        <div id="player"></div>
+        <div id="placeholder" class="placeholder">
+          <p>Paste a YouTube link above</p>
+          <p class="hint">youtu.be / watch?v= / Shorts / playlist · <kbd>[</kbd><kbd>]</kbd> opacity · <kbd>Ctrl+Shift+C</kbd> click-through</p>
+        </div>
+        <div id="loading" class="loading hidden" aria-live="polite">Loading…</div>
+      </div>
+    </main>
+
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+  </div>
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="lib/youtube-url.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>
